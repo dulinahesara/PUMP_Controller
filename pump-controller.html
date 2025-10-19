@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP Pump Controller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .relay-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .relay-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .relay-info h3 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 20px;
+        }
+        
+        .relay-status {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .relay-status.on {
+            background: #28a745;
+            color: white;
+        }
+        
+        .relay-status.off {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛜 Pump Controller</h1>
+        <div id="status" class="status disconnected">Connecting to Firebase...</div>
+        
+        <div class="relay-card">
+            <div class="relay-info">
+                <h3>Relay 1</h3>
+                <span id="status1" class="relay-status off">OFF</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="relay1" onchange="toggleRelay(1)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div class="relay-card">
+            <div class="relay-info">
+                <h3>Relay 2</h3>
+                <span id="status2" class="relay-status off">OFF</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="relay2" onchange="toggleRelay(2)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div class="relay-card">
+            <div class="relay-info">
+                <h3>Relay 3</h3>
+                <span id="status3" class="relay-status off">OFF</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="relay3" onchange="toggleRelay(3)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div class="footer">
+            ESP8266 | Firebase
+           © dulinahesara 2025 
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPkQfizzL38LqI8Tk6dPf1qKWBbvJuoyc",
+            authDomain: "pump-controller-ff3f4.firebaseapp.com",
+            databaseURL: "https://pump-controller-ff3f4-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pump-controller-ff3f4",
+            storageBucket: "pump-controller-ff3f4.firebasestorage.app",
+            messagingSenderId: "424401194545",
+            appId: "1:424401194545:web:ac24ec649fbc1eebe18f10"
+
+};
+
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Update status indicator
+        document.getElementById('status').textContent = 'Connected to Firebase';
+        document.getElementById('status').className = 'status connected';
+
+        // Listen to relay states
+        for (let i = 1; i <= 3; i++) {
+            const relayRef = ref(database, `/relays/relay${i}`);
+            onValue(relayRef, (snapshot) => {
+                const state = snapshot.val();
+                const checkbox = document.getElementById(`relay${i}`);
+                const statusElement = document.getElementById(`status${i}`);
+                
+                checkbox.checked = state;
+                statusElement.textContent = state ? 'ON' : 'OFF';
+                statusElement.className = state ? 'relay-status on' : 'relay-status off';
+            });
+        }
+
+        // Make toggleRelay available globally
+        window.toggleRelay = function(relayNum) {
+            const checkbox = document.getElementById(`relay${relayNum}`);
+            const relayRef = ref(database, `/relays/relay${relayNum}`);
+            set(relayRef, checkbox.checked);
+        };
+    </script>
+</body>
+</html>
