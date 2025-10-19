@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP Pump Controller</title>
+    <title>ESP8266 Relay Controller</title>
     <style>
         * {
             margin: 0;
@@ -30,6 +30,51 @@
             width: 100%;
         }
         
+        .login-container {
+            text-align: center;
+        }
+        
+        .login-container h1 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .login-container input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .login-container input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .login-container button {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .login-container button:hover {
+            background: #5568d3;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
         h1 {
             text-align: center;
             color: #333;
@@ -37,22 +82,48 @@
             font-size: 28px;
         }
         
-        .status {
+        .device-status {
             text-align: center;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
-        .status.connected {
+        .device-status.online {
             background: #d4edda;
             color: #155724;
         }
         
-        .status.disconnected {
+        .device-status.offline {
             background: #f8d7da;
             color: #721c24;
+        }
+        
+        .status-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-icon.online {
+            background: #28a745;
+        }
+        
+        .status-icon.offline {
+            background: #dc3545;
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         .relay-card {
@@ -146,91 +217,204 @@
             color: #666;
             font-size: 14px;
         }
+        
+        .logout-btn {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .logout-btn button {
+            padding: 10px 30px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .logout-btn button:hover {
+            background: #c82333;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .last-seen {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🛜 Pump Controller</h1>
-        <div id="status" class="status disconnected">Connecting to Firebase...</div>
-        
-        <div class="relay-card">
-            <div class="relay-info">
-                <h3>Relay 1</h3>
-                <span id="status1" class="relay-status off">OFF</span>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="relay1" onchange="toggleRelay(1)">
-                <span class="slider"></span>
-            </label>
+        <div id="loginSection" class="login-container">
+            <h1>🔐 Login Required</h1>
+            <input type="password" id="passwordInput" placeholder="Enter password" onkeypress="checkEnter(event)">
+            <button onclick="login()">Login</button>
+            <div id="errorMessage" class="error-message"></div>
         </div>
         
-        <div class="relay-card">
-            <div class="relay-info">
-                <h3>Relay 2</h3>
-                <span id="status2" class="relay-status off">OFF</span>
+        <div id="controlSection" class="hidden">
+            <h1>🔌 Relay Controller</h1>
+            
+            <div id="deviceStatus" class="device-status offline">
+                <span class="status-icon offline"></span>
+                <span>Device Offline</span>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="relay2" onchange="toggleRelay(2)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        
-        <div class="relay-card">
-            <div class="relay-info">
-                <h3>Relay 3</h3>
-                <span id="status3" class="relay-status off">OFF</span>
+            <div class="last-seen" id="lastSeen"></div>
+            
+            <div class="relay-card">
+                <div class="relay-info">
+                    <h3>Relay 1</h3>
+                    <span id="status1" class="relay-status off">OFF</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="relay1" onchange="toggleRelay(1)">
+                    <span class="slider"></span>
+                </label>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="relay3" onchange="toggleRelay(3)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        
-        <div class="footer">
-            ESP8266 | Firebase
-           © dulinahesara 2025 
+            
+            <div class="relay-card">
+                <div class="relay-info">
+                    <h3>Relay 2</h3>
+                    <span id="status2" class="relay-status off">OFF</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="relay2" onchange="toggleRelay(2)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="relay-card">
+                <div class="relay-info">
+                    <h3>Relay 3</h3>
+                    <span id="status3" class="relay-status off">OFF</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="relay3" onchange="toggleRelay(3)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="logout-btn">
+                <button onclick="logout()">Logout</button>
+            </div>
+            
+            <div class="footer">
+                ESP8266 Firebase Controller
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        let database;
+        let isAuthenticated = false;
+        let correctPassword = "";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBPkQfizzL38LqI8Tk6dPf1qKWBbvJuoyc",
-            authDomain: "pump-controller-ff3f4.firebaseapp.com",
             databaseURL: "https://pump-controller-ff3f4-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "pump-controller-ff3f4",
-            storageBucket: "pump-controller-ff3f4.firebasestorage.app",
-            messagingSenderId: "424401194545",
-            appId: "1:424401194545:web:ac24ec649fbc1eebe18f10"
-
-};
-
+            projectId: "pump-controller-ff3f4"
+        };
 
         const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+        database = getDatabase(app);
 
-        // Update status indicator
-        document.getElementById('status').textContent = 'Connected to Firebase';
-        document.getElementById('status').className = 'status connected';
+        // Load password from Firebase
+        const passwordRef = ref(database, '/settings/password');
+        get(passwordRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                correctPassword = snapshot.val();
+            } else {
+                // Set default password if not exists
+                correctPassword = "relay2024";
+                set(passwordRef, correctPassword);
+            }
+        });
 
-        // Listen to relay states
-        for (let i = 1; i <= 3; i++) {
-            const relayRef = ref(database, `/relays/relay${i}`);
-            onValue(relayRef, (snapshot) => {
-                const state = snapshot.val();
-                const checkbox = document.getElementById(`relay${i}`);
-                const statusElement = document.getElementById(`status${i}`);
+        window.checkEnter = function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        };
+
+        window.login = function() {
+            const password = document.getElementById('passwordInput').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (password === correctPassword) {
+                isAuthenticated = true;
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('controlSection').classList.remove('hidden');
+                errorMessage.textContent = '';
+                initializeControlPanel();
+            } else {
+                errorMessage.textContent = 'Incorrect password!';
+                document.getElementById('passwordInput').value = '';
+            }
+        };
+
+        window.logout = function() {
+            isAuthenticated = false;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('controlSection').classList.add('hidden');
+            document.getElementById('passwordInput').value = '';
+        };
+
+        function initializeControlPanel() {
+            // Monitor device status
+            const statusRef = ref(database, '/status');
+            onValue(statusRef, (snapshot) => {
+                const status = snapshot.val();
+                const deviceStatusEl = document.getElementById('deviceStatus');
+                const lastSeenEl = document.getElementById('lastSeen');
                 
-                checkbox.checked = state;
-                statusElement.textContent = state ? 'ON' : 'OFF';
-                statusElement.className = state ? 'relay-status on' : 'relay-status off';
+                if (status && status.online) {
+                    const lastSeen = status.lastSeen || 0;
+                    const currentTime = Math.floor(Date.now() / 1000);
+                    const timeDiff = currentTime - lastSeen;
+                    
+                    if (timeDiff < 10) {
+                        deviceStatusEl.className = 'device-status online';
+                        deviceStatusEl.innerHTML = '<span class="status-icon online"></span><span>Device Online</span>';
+                        lastSeenEl.textContent = 'Active now';
+                    } else {
+                        deviceStatusEl.className = 'device-status offline';
+                        deviceStatusEl.innerHTML = '<span class="status-icon offline"></span><span>Device Offline</span>';
+                        lastSeenEl.textContent = `Last seen: ${timeDiff}s ago`;
+                    }
+                } else {
+                    deviceStatusEl.className = 'device-status offline';
+                    deviceStatusEl.innerHTML = '<span class="status-icon offline"></span><span>Device Offline</span>';
+                    lastSeenEl.textContent = 'Never connected';
+                }
             });
+
+            // Monitor relay states
+            for (let i = 1; i <= 3; i++) {
+                const relayRef = ref(database, `/relays/relay${i}`);
+                onValue(relayRef, (snapshot) => {
+                    const state = snapshot.val();
+                    const checkbox = document.getElementById(`relay${i}`);
+                    const statusElement = document.getElementById(`status${i}`);
+                    
+                    checkbox.checked = state;
+                    statusElement.textContent = state ? 'ON' : 'OFF';
+                    statusElement.className = state ? 'relay-status on' : 'relay-status off';
+                });
+            }
         }
 
-        // Make toggleRelay available globally
         window.toggleRelay = function(relayNum) {
+            if (!isAuthenticated) return;
             const checkbox = document.getElementById(`relay${relayNum}`);
             const relayRef = ref(database, `/relays/relay${relayNum}`);
             set(relayRef, checkbox.checked);
