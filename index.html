@@ -31,9 +31,7 @@
         }
         
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
             margin-bottom: 35px;
         }
         
@@ -41,56 +39,6 @@
             color: #333;
             font-size: 28px;
             font-weight: 600;
-        }
-        
-        .status-icons {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .status-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            transition: all 0.3s;
-            cursor: help;
-            position: relative;
-        }
-        
-        .status-icon.connected {
-            background: #28a745;
-        }
-        
-        .status-icon.disconnected {
-            background: #dc3545;
-        }
-        
-        .status-icon.warning {
-            background: #ffc107;
-        }
-        
-        .tooltip {
-            position: absolute;
-            top: 38px;
-            right: 0;
-            background: #333;
-            color: white;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-            z-index: 1000;
-        }
-        
-        .status-icon:hover .tooltip {
-            opacity: 1;
         }
         
         .relay-card {
@@ -178,20 +126,105 @@
             transform: translateX(26px);
         }
         
+        .clear-btn {
+            width: 100%;
+            padding: 14px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+        
+        .clear-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .clear-btn:active {
+            transform: translateY(0);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .modal-content h2 {
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+        
+        .modal-content p {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+        
+        .btn-confirm {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-confirm:hover {
+            background: #c82333;
+        }
+        
         .footer {
             text-align: center;
             margin-top: 30px;
             color: #999;
             font-size: 12px;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .status-icon.checking {
-            animation: pulse 1.5s infinite;
         }
     </style>
 </head>
@@ -199,16 +232,6 @@
     <div class="container">
         <div class="header">
             <h1>Pump Controller</h1>
-            <div class="status-icons">
-                <div id="firebaseStatus" class="status-icon disconnected checking">
-                    🔥
-                    <div class="tooltip">Firebase: Connecting...</div>
-                </div>
-                <div id="deviceStatus" class="status-icon disconnected">
-                    📡
-                    <div class="tooltip">Device: Offline</div>
-                </div>
-            </div>
         </div>
         
         <div class="relay-card">
@@ -244,8 +267,23 @@
             </label>
         </div>
         
+        <button class="clear-btn" onclick="showClearModal()">🗑️ Clear ESP8266 WiFi Settings</button>
+        
         <div class="footer">
             © dulinahesara 2025
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="clearModal" class="modal">
+        <div class="modal-content">
+            <h2>⚠️ Warning</h2>
+            <p>This will clear the WiFi credentials stored in the ESP8266's EEPROM. The device will restart and enter WiFi setup mode.</p>
+            <p><strong>Are you sure you want to continue?</strong></p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="hideClearModal()">Cancel</button>
+                <button class="btn-confirm" onclick="clearEEPROM()">Clear EEPROM</button>
+            </div>
         </div>
     </div>
 
@@ -265,45 +303,6 @@
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        
-        const firebaseStatusEl = document.getElementById('firebaseStatus');
-        const deviceStatusEl = document.getElementById('deviceStatus');
-        
-        let deviceLastSeen = 0;
-        let deviceCheckInterval;
-
-        // Update Firebase status
-        firebaseStatusEl.className = 'status-icon connected';
-        firebaseStatusEl.querySelector('.tooltip').textContent = 'Firebase: Connected';
-
-        // Listen to device heartbeat
-        const heartbeatRef = ref(database, '/device/lastSeen');
-        onValue(heartbeatRef, (snapshot) => {
-            deviceLastSeen = snapshot.val() || 0;
-            checkDeviceStatus();
-        });
-
-        function checkDeviceStatus() {
-            const now = Date.now();
-            const timeDiff = now - deviceLastSeen;
-            
-            if (deviceLastSeen === 0) {
-                deviceStatusEl.className = 'status-icon disconnected';
-                deviceStatusEl.querySelector('.tooltip').textContent = 'Device: Offline';
-            } else if (timeDiff < 5000) {
-                deviceStatusEl.className = 'status-icon connected';
-                deviceStatusEl.querySelector('.tooltip').textContent = 'Device: Online';
-            } else if (timeDiff < 15000) {
-                deviceStatusEl.className = 'status-icon warning';
-                deviceStatusEl.querySelector('.tooltip').textContent = 'Device: Unstable';
-            } else {
-                deviceStatusEl.className = 'status-icon disconnected';
-                deviceStatusEl.querySelector('.tooltip').textContent = 'Device: Offline';
-            }
-        }
-
-        // Check device status every 2 seconds
-        deviceCheckInterval = setInterval(checkDeviceStatus, 2000);
 
         // Listen to relay states
         for (let i = 1; i <= 3; i++) {
@@ -319,11 +318,29 @@
             });
         }
 
-        // Make toggleRelay available globally
+        // Make functions available globally
         window.toggleRelay = function(relayNum) {
             const checkbox = document.getElementById(`relay${relayNum}`);
             const relayRef = ref(database, `/relays/relay${relayNum}`);
             set(relayRef, checkbox.checked);
+        };
+
+        window.showClearModal = function() {
+            document.getElementById('clearModal').classList.add('show');
+        };
+
+        window.hideClearModal = function() {
+            document.getElementById('clearModal').classList.remove('show');
+        };
+
+        window.clearEEPROM = function() {
+            const clearRef = ref(database, '/commands/clearEEPROM');
+            set(clearRef, true).then(() => {
+                alert('Clear EEPROM command sent! The ESP8266 will restart in WiFi setup mode.');
+                hideClearModal();
+            }).catch((error) => {
+                alert('Error sending command: ' + error.message);
+            });
         };
     </script>
 </body>
