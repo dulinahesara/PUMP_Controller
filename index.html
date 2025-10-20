@@ -13,12 +13,24 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('background.jpg') center/cover no-repeat fixed;
+            background-color: #667eea;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
         }
         
         .container {
@@ -28,6 +40,19 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             max-width: 500px;
             width: 100%;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none !important;
         }
         
         .header {
@@ -40,27 +65,179 @@
             font-size: 28px;
             font-weight: 600;
         }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
         
         .relay-card {
             background: #f8f9fa;
             border-radius: 12px;
             padding: 22px;
             margin-bottom: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             transition: all 0.2s;
         }
         
         .relay-card:hover {
             background: #f0f1f3;
         }
+
+        .relay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .relay-name-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
         
         .relay-info h3 {
             color: #333;
-            margin-bottom: 5px;
             font-size: 18px;
             font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-icon {
+            font-size: 14px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .relay-info h3:hover .edit-icon {
+            opacity: 1;
+        }
+
+        .relay-name-input {
+            padding: 8px 12px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 200px;
+        }
+
+        .relay-name-input:focus {
+            outline: none;
+        }
+
+        .name-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .name-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #218838;
+        }
+
+        .btn-cancel-edit {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-cancel-edit:hover {
+            background: #5a6268;
+        }
+
+        .relay-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .relay-status {
@@ -148,6 +325,29 @@
         .clear-btn:active {
             transform: translateY(0);
         }
+
+        .logout-btn {
+            width: 100%;
+            padding: 14px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .logout-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .logout-btn:active {
+            transform: translateY(0);
+        }
         
         .modal {
             display: none;
@@ -229,45 +429,113 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-header">
+            <h1>🔐 Pump Controller</h1>
+            <p>Please enter your password to continue</p>
+        </div>
+        <div class="form-group">
+            <label for="passwordInput">Password</label>
+            <input type="password" id="passwordInput" placeholder="Enter password">
+        </div>
+        <button class="login-btn" onclick="attemptLogin()">Login</button>
+        <div id="errorMessage" class="error-message">Incorrect password. Please try again.</div>
+        <div class="footer">
+            © dulinahesara 2025
+        </div>
+    </div>
+    
+
+    <!-- Main Controller Screen -->
+    <div id="mainScreen" class="container hidden">
         <div class="header">
-            <h1>Pump Controller</h1>
+            <h1>&#128223 Pump Controller</h1>
         </div>
         
         <div class="relay-card">
-            <div class="relay-info">
-                <h3>Relay 1</h3>
+            <div class="relay-header">
+                <div class="relay-name-container">
+                    <div class="relay-info">
+                        <h3 id="name1Display" onclick="editRelayName(1)">
+                            <span id="name1Text">Relay 1</span>
+                            <span class="edit-icon">✏️</span>
+                        </h3>
+                    </div>
+                    <div id="name1Edit" class="hidden">
+                        <input type="text" id="name1Input" class="relay-name-input" maxlength="20">
+                        <div class="name-buttons">
+                            <button class="name-btn btn-save" onclick="saveRelayName(1)">✓</button>
+                            <button class="name-btn btn-cancel-edit" onclick="cancelEdit(1)">✕</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="relay-controls">
                 <span id="status1" class="relay-status off">OFF</span>
+                <label class="switch">
+                    <input type="checkbox" id="relay1" onchange="toggleRelay(1)">
+                    <span class="slider"></span>
+                </label>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="relay1" onchange="toggleRelay(1)">
-                <span class="slider"></span>
-            </label>
         </div>
         
         <div class="relay-card">
-            <div class="relay-info">
-                <h3>Relay 2</h3>
+            <div class="relay-header">
+                <div class="relay-name-container">
+                    <div class="relay-info">
+                        <h3 id="name2Display" onclick="editRelayName(2)">
+                            <span id="name2Text">Relay 2</span>
+                            <span class="edit-icon">✏️</span>
+                        </h3>
+                    </div>
+                    <div id="name2Edit" class="hidden">
+                        <input type="text" id="name2Input" class="relay-name-input" maxlength="20">
+                        <div class="name-buttons">
+                            <button class="name-btn btn-save" onclick="saveRelayName(2)">✓</button>
+                            <button class="name-btn btn-cancel-edit" onclick="cancelEdit(2)">✕</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="relay-controls">
                 <span id="status2" class="relay-status off">OFF</span>
+                <label class="switch">
+                    <input type="checkbox" id="relay2" onchange="toggleRelay(2)">
+                    <span class="slider"></span>
+                </label>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="relay2" onchange="toggleRelay(2)">
-                <span class="slider"></span>
-            </label>
         </div>
         
         <div class="relay-card">
-            <div class="relay-info">
-                <h3>Relay 3</h3>
-                <span id="status3" class="relay-status off">OFF</span>
+            <div class="relay-header">
+                <div class="relay-name-container">
+                    <div class="relay-info">
+                        <h3 id="name3Display" onclick="editRelayName(3)">
+                            <span id="name3Text">Relay 3</span>
+                            <span class="edit-icon">✏️</span>
+                        </h3>
+                    </div>
+                    <div id="name3Edit" class="hidden">
+                        <input type="text" id="name3Input" class="relay-name-input" maxlength="20">
+                        <div class="name-buttons">
+                            <button class="name-btn btn-save" onclick="saveRelayName(3)">✓</button>
+                            <button class="name-btn btn-cancel-edit" onclick="cancelEdit(3)">✕</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <label class="switch">
-                <input type="checkbox" id="relay3" onchange="toggleRelay(3)">
-                <span class="slider"></span>
-            </label>
+            <div class="relay-controls">
+                <span id="status3" class="relay-status off">OFF</span>
+                <label class="switch">
+                    <input type="checkbox" id="relay3" onchange="toggleRelay(3)">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
         
-        <button class="clear-btn" onclick="showClearModal()">🗑️ Clear ESP8266 WiFi Settings</button>
+        <button class="clear-btn" onclick="showClearModal()">Clear ESP8266 WiFi Settings</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
         
         <div class="footer">
             © dulinahesara 2025
@@ -289,7 +557,7 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBPkQfizzL38LqI8Tk6dPf1qKWBbvJuoyc",
@@ -304,18 +572,81 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Listen to relay states
-        for (let i = 1; i <= 3; i++) {
-            const relayRef = ref(database, `/relays/relay${i}`);
-            onValue(relayRef, (snapshot) => {
-                const state = snapshot.val();
-                const checkbox = document.getElementById(`relay${i}`);
-                const statusElement = document.getElementById(`status${i}`);
-                
-                checkbox.checked = state;
-                statusElement.textContent = state ? 'ON' : 'OFF';
-                statusElement.className = state ? 'relay-status on' : 'relay-status off';
-            });
+        // Password stored in Firebase (default: "admin123")
+        const passwordRef = ref(database, '/settings/password');
+        
+        // Initialize default password if not exists
+        get(passwordRef).then((snapshot) => {
+            if (!snapshot.exists()) {
+                set(passwordRef, 'admin123');
+            }
+        });
+
+        // Check if user is already logged in
+        const isLoggedIn = sessionStorage.getItem('pumpControllerAuth') === 'true';
+        if (isLoggedIn) {
+            showMainScreen();
+        }
+
+        // Login function
+        window.attemptLogin = async function() {
+            const input = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            const snapshot = await get(passwordRef);
+            const correctPassword = snapshot.val() || 'admin123';
+            
+            if (input === correctPassword) {
+                sessionStorage.setItem('pumpControllerAuth', 'true');
+                errorMsg.classList.remove('show');
+                showMainScreen();
+            } else {
+                errorMsg.classList.add('show');
+                document.getElementById('passwordInput').value = '';
+            }
+        };
+
+        // Allow Enter key to login
+        document.getElementById('passwordInput')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                attemptLogin();
+            }
+        });
+
+        window.logout = function() {
+            sessionStorage.removeItem('pumpControllerAuth');
+            document.getElementById('mainScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('passwordInput').value = '';
+        };
+
+        function showMainScreen() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainScreen').classList.remove('hidden');
+            initializeRelays();
+        }
+
+        function initializeRelays() {
+            // Listen to relay states
+            for (let i = 1; i <= 3; i++) {
+                const relayRef = ref(database, `/relays/relay${i}`);
+                onValue(relayRef, (snapshot) => {
+                    const state = snapshot.val();
+                    const checkbox = document.getElementById(`relay${i}`);
+                    const statusElement = document.getElementById(`status${i}`);
+                    
+                    checkbox.checked = state;
+                    statusElement.textContent = state ? 'ON' : 'OFF';
+                    statusElement.className = state ? 'relay-status on' : 'relay-status off';
+                });
+
+                // Listen to relay names
+                const nameRef = ref(database, `/settings/relayNames/relay${i}`);
+                onValue(nameRef, (snapshot) => {
+                    const name = snapshot.val() || `Relay ${i}`;
+                    document.getElementById(`name${i}Text`).textContent = name;
+                });
+            }
         }
 
         // Make functions available globally
@@ -324,6 +655,53 @@
             const relayRef = ref(database, `/relays/relay${relayNum}`);
             set(relayRef, checkbox.checked);
         };
+
+        window.editRelayName = function(relayNum) {
+            const displayDiv = document.getElementById(`name${relayNum}Display`);
+            const editDiv = document.getElementById(`name${relayNum}Edit`);
+            const input = document.getElementById(`name${relayNum}Input`);
+            const currentName = document.getElementById(`name${relayNum}Text`).textContent;
+            
+            input.value = currentName;
+            displayDiv.classList.add('hidden');
+            editDiv.classList.remove('hidden');
+            input.focus();
+            input.select();
+        };
+
+        window.saveRelayName = function(relayNum) {
+            const input = document.getElementById(`name${relayNum}Input`);
+            const newName = input.value.trim();
+            
+            if (newName) {
+                const nameRef = ref(database, `/settings/relayNames/relay${relayNum}`);
+                set(nameRef, newName).then(() => {
+                    cancelEdit(relayNum);
+                });
+            }
+        };
+
+        window.cancelEdit = function(relayNum) {
+            const displayDiv = document.getElementById(`name${relayNum}Display`);
+            const editDiv = document.getElementById(`name${relayNum}Edit`);
+            
+            displayDiv.classList.remove('hidden');
+            editDiv.classList.add('hidden');
+        };
+
+        // Allow Enter to save, Escape to cancel
+        for (let i = 1; i <= 3; i++) {
+            document.getElementById(`name${i}Input`)?.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveRelayName(i);
+                }
+            });
+            document.getElementById(`name${i}Input`)?.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    cancelEdit(i);
+                }
+            });
+        }
 
         window.showClearModal = function() {
             document.getElementById('clearModal').classList.add('show');
