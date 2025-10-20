@@ -57,13 +57,28 @@
         
         .header {
             text-align: center;
-            margin-bottom: 35px;
+            margin-bottom: 25px;
         }
         
         h1 {
             color: #333;
             font-size: 28px;
             font-weight: 600;
+        }
+
+        .clock-display {
+            text-align: center;
+            font-size: 16px;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .clock-date {
+            font-size: 13px;
+            color: #999;
+            margin-top: 4px;
         }
 
         .login-header {
@@ -141,6 +156,18 @@
         .error-message.show {
             display: block;
         }
+
+        .success-message {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
         
         .relay-card {
             background: #f8f9fa;
@@ -178,14 +205,16 @@
             gap: 8px;
         }
 
-        .edit-icon {
-            font-size: 14px;
-            opacity: 0.6;
-            transition: opacity 0.2s;
+        .edit-link {
+            font-size: 12px;
+            color: #999;
+            font-weight: 400;
+            text-decoration: underline;
+            transition: color 0.2s;
         }
 
-        .relay-info h3:hover .edit-icon {
-            opacity: 1;
+        .relay-info h3:hover .edit-link {
+            color: #667eea;
         }
 
         .relay-name-input {
@@ -302,6 +331,29 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+
+        .change-password-btn {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+
+        .change-password-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .change-password-btn:active {
+            transform: translateY(0);
+        }
         
         .clear-btn {
             width: 100%;
@@ -314,7 +366,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         
         .clear-btn:hover {
@@ -376,8 +428,12 @@
         }
         
         .modal-content h2 {
-            color: #dc3545;
+            color: #333;
             margin-bottom: 15px;
+        }
+
+        .modal-content h2.warning {
+            color: #dc3545;
         }
         
         .modal-content p {
@@ -419,6 +475,15 @@
         .btn-confirm:hover {
             background: #c82333;
         }
+
+        .btn-change-password {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-change-password:hover {
+            background: #5568d3;
+        }
         
         .footer {
             text-align: center;
@@ -450,7 +515,9 @@
     <!-- Main Controller Screen -->
     <div id="mainScreen" class="container hidden">
         <div class="header">
-            <h1>Pump Controller</h1>
+            <h1>ESP Pump Controller</h1>
+            <div class="clock-display" id="clockDisplay">--:--:--</div>
+            <div class="clock-date" id="dateDisplay">--</div>
         </div>
         
         <div class="relay-card">
@@ -459,7 +526,7 @@
                     <div class="relay-info">
                         <h3 id="name1Display" onclick="editRelayName(1)">
                             <span id="name1Text">Relay 1</span>
-                            <span class="edit-icon">✏️</span>
+                            <span class="edit-link">Change Name</span>
                         </h3>
                     </div>
                     <div id="name1Edit" class="hidden">
@@ -486,7 +553,7 @@
                     <div class="relay-info">
                         <h3 id="name2Display" onclick="editRelayName(2)">
                             <span id="name2Text">Relay 2</span>
-                            <span class="edit-icon">✏️</span>
+                            <span class="edit-link">Change Name</span>
                         </h3>
                     </div>
                     <div id="name2Edit" class="hidden">
@@ -513,7 +580,7 @@
                     <div class="relay-info">
                         <h3 id="name3Display" onclick="editRelayName(3)">
                             <span id="name3Text">Relay 3</span>
-                            <span class="edit-icon">✏️</span>
+                            <span class="edit-link">Change Name</span>
                         </h3>
                     </div>
                     <div id="name3Edit" class="hidden">
@@ -534,6 +601,7 @@
             </div>
         </div>
         
+        <button class="change-password-btn" onclick="showPasswordModal()">Change Password</button>
         <button class="clear-btn" onclick="showClearModal()">Clear ESP8266 WiFi Settings</button>
         <button class="logout-btn" onclick="logout()">Logout</button>
         
@@ -542,10 +610,35 @@
         </div>
     </div>
 
+    <!-- Change Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h2>🔑 Change Password</h2>
+            <div class="form-group" style="text-align: left;">
+                <label for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" placeholder="Enter current password">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" placeholder="Enter new password">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label for="confirmPassword">Confirm New Password</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm new password">
+            </div>
+            <div id="passwordError" class="error-message"></div>
+            <div id="passwordSuccess" class="success-message"></div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="hidePasswordModal()">Cancel</button>
+                <button class="btn-change-password" onclick="changePassword()">Change Password</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Confirmation Modal -->
     <div id="clearModal" class="modal">
         <div class="modal-content">
-            <h2>⚠️ Warning</h2>
+            <h2 class="warning">⚠️ Warning</h2>
             <p>This will clear the WiFi credentials stored in the ESP8266's EEPROM. The device will restart and enter WiFi setup mode.</p>
             <p><strong>Are you sure you want to continue?</strong></p>
             <div class="modal-buttons">
@@ -581,6 +674,34 @@
                 set(passwordRef, 'admin123');
             }
         });
+
+        // Real-time clock
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            // Convert to 12-hour format
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 should be 12
+            const hoursStr = String(hours).padStart(2, '0');
+            
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            const dayName = days[now.getDay()];
+            const monthName = months[now.getMonth()];
+            const date = now.getDate();
+            const year = now.getFullYear();
+            
+            const clockDisplay = document.getElementById('clockDisplay');
+            const dateDisplay = document.getElementById('dateDisplay');
+            
+            if (clockDisplay) clockDisplay.textContent = `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+            if (dateDisplay) dateDisplay.textContent = `${dayName}, ${monthName} ${date}, ${year}`;
+        }
 
         // Check if user is already logged in
         const isLoggedIn = sessionStorage.getItem('pumpControllerAuth') === 'true';
@@ -624,6 +745,8 @@
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainScreen').classList.remove('hidden');
             initializeRelays();
+            updateClock();
+            setInterval(updateClock, 1000);
         }
 
         function initializeRelays() {
@@ -702,6 +825,71 @@
                 }
             });
         }
+
+        // Password change functions
+        window.showPasswordModal = function() {
+            document.getElementById('passwordModal').classList.add('show');
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            document.getElementById('passwordError').classList.remove('show');
+            document.getElementById('passwordSuccess').classList.remove('show');
+        };
+
+        window.hidePasswordModal = function() {
+            document.getElementById('passwordModal').classList.remove('show');
+        };
+
+        window.changePassword = async function() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMsg = document.getElementById('passwordError');
+            const successMsg = document.getElementById('passwordSuccess');
+            
+            errorMsg.classList.remove('show');
+            successMsg.classList.remove('show');
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                errorMsg.textContent = 'Please fill in all fields.';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                errorMsg.textContent = 'New password must be at least 6 characters long.';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                errorMsg.textContent = 'New passwords do not match.';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
+            const snapshot = await get(passwordRef);
+            const storedPassword = snapshot.val() || 'admin123';
+            
+            if (currentPassword !== storedPassword) {
+                errorMsg.textContent = 'Current password is incorrect.';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
+            try {
+                await set(passwordRef, newPassword);
+                successMsg.textContent = 'Password changed successfully!';
+                successMsg.classList.add('show');
+                
+                setTimeout(() => {
+                    hidePasswordModal();
+                }, 2000);
+            } catch (error) {
+                errorMsg.textContent = 'Error changing password: ' + error.message;
+                errorMsg.classList.add('show');
+            }
+        };
 
         window.showClearModal = function() {
             document.getElementById('clearModal').classList.add('show');
